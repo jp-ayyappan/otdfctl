@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.30.0](https://github.com/opentdf/otdfctl/compare/v0.29.0...v0.30.0) (2026-03-06)
+
+
+### Features
+
+* **core:** add scope support for client creds ([#752](https://github.com/opentdf/otdfctl/issues/752)) ([9ca9e43](https://github.com/opentdf/otdfctl/commit/9ca9e43394c67813a5fd1f506d174fbf33dcc492))
+
+
+### Bug Fixes
+
+* **core:** bump toolchain to go 1.24.13 ([#747](https://github.com/opentdf/otdfctl/issues/747)) ([6804b93](https://github.com/opentdf/otdfctl/commit/6804b93c848bb56398bfdff09a78e1458493f5e7))
+* **core:** disable RR E2E tests ([#768](https://github.com/opentdf/otdfctl/issues/768)) ([0821b8c](https://github.com/opentdf/otdfctl/commit/0821b8c933b97a9550fdac47449adf8b533cb04a))
+* **core:** refactor `ListAttributesValues` to use `Get` ([#769](https://github.com/opentdf/otdfctl/issues/769)) ([a82f7b7](https://github.com/opentdf/otdfctl/commit/a82f7b74a9fefd2dc59b019e9ad2877e25ac731a))
+* **core:** unsafe update result output values order ([#759](https://github.com/opentdf/otdfctl/issues/759)) ([baeba0f](https://github.com/opentdf/otdfctl/commit/baeba0f078fdad1b5fff018ff7b097eda794c703))
+
 ## [0.29.0](https://github.com/opentdf/otdfctl/compare/v0.28.0...v0.29.0) (2026-01-28)
 
 
