@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/otdfctl/pkg/handlers"
@@ -12,8 +13,10 @@ import (
 )
 
 type AttributeList struct {
-	list list.Model
-	h    handlers.Handler
+	list    list.Model
+	h       handlers.Handler
+	spinner spinner.Model
+	loading bool
 }
 
 type AttributeItem struct {
@@ -21,60 +24,47 @@ type AttributeItem struct {
 	name string
 }
 
-func (m AttributeItem) FilterValue() string {
-	return m.name
+func (m AttributeItem) FilterValue() string { return m.name }
+func (m AttributeItem) Title() string       { return m.name }
+func (m AttributeItem) Description() string { return m.id }
+
+type attributesLoadedMsg struct {
+	items []list.Item
+	err   error
 }
 
-func (m AttributeItem) Title() string {
-	return m.name
-}
-
-func (m AttributeItem) Description() string {
-	return m.id
+func loadAttributes(ctx context.Context, h handlers.Handler, selectID string) tea.Cmd {
+	return func() tea.Msg {
+		res, err := h.ListAttributes(ctx, common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, 250, 0)
+		if err != nil {
+			return attributesLoadedMsg{err: err}
+		}
+		var items []list.Item
+		for _, attr := range res.GetAttributes() {
+			items = append(items, AttributeItem{id: attr.GetId(), name: attr.GetName()})
+		}
+		return attributesLoadedMsg{items: items}
+	}
 }
 
 func InitAttributeList(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
-	// TODO: handle and return error view and use real command flags limit/offset
-	var (
-		limit  int32 = 100
-		offset int32 = 0
-	)
-	res, _ := h.ListAttributes(ctx, common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, limit, offset)
-	var attrs []list.Item
-	selectIdx := 0
-	for i, attr := range res.GetAttributes() {
-		var vals []string
-		for _, val := range attr.GetValues() {
-			// TODO: do something with values here
-			//lint:ignore SA4010 // still in-progress
-			vals = append(vals, val.GetValue())
-		}
-		if attr.GetId() == id {
-			selectIdx = i
-		}
-		item := AttributeItem{
-			id:   attr.GetId(),
-			name: attr.GetName(),
-		}
-		attrs = append(attrs, item)
-	}
 	l.Title = "Attributes"
-	l.SetItems(attrs)
-	l.Select(selectIdx)
-	m := AttributeList{h: h, list: l}
-	return m.Update(WindowMsg())
+
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(ColorPrimary)
+
+	m := AttributeList{h: h, list: l, spinner: s, loading: true}
+	return m, tea.Batch(s.Tick, loadAttributes(ctx, h, id))
 }
 
-func (m AttributeList) Init() tea.Cmd {
-	return nil
-}
+func (m AttributeList) Init() tea.Cmd { return nil }
 
 func (m AttributeList) KeyBindings() []KeyBinding {
 	return []KeyBinding{
 		{Key: "enter", Help: "view"},
 		{Key: "/", Help: "filter"},
-		{Key: "backspace", Help: "back"},
 	}
 }
 
@@ -96,61 +86,50 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	ctx := context.Background()
 
 	switch msg := msg.(type) {
+	case attributesLoadedMsg:
+		m.loading = false
+		if msg.err != nil {
+			return m, func() tea.Msg {
+				return StatusMsg{Text: "Error loading attributes: " + msg.err.Error(), IsError: true}
+			}
+		}
+		m.list.SetItems(msg.items)
+		return m, nil
+
+	case spinner.TickMsg:
+		if m.loading {
+			var cmd tea.Cmd
+			m.spinner, cmd = m.spinner.Update(msg)
+			return m, cmd
+		}
+
 	case tea.WindowSizeMsg:
 		constants.WindowSize = msg
 		m.list.SetSize(msg.Width, msg.Height)
 		return m, nil
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "ctrl+[", "backspace":
-			// Navigation back is handled by the root layout via tab + sidebar
-			return m, nil
-		// case "c":
-		// create new attribute
-		// return InitAttributeView(m.list.Items(), len(m.list.Items()))
 		case "enter", "e":
-			return InitAttributeView(ctx, m.list.Items()[m.list.Index()].(AttributeItem).id, m.h)
-			// case "ctrl+d":
-			// 	m.list.RemoveItem(m.list.Index())
-			// 	newIndex := m.list.Index() - 1
-			// 	if newIndex < 0 {
-			// 		newIndex = 0
-			// 	}
-			// 	m.list.Select(newIndex)
+			if m.loading || len(m.list.Items()) == 0 {
+				return m, nil
+			}
+			return InitAttributeView(ctx, m.list.SelectedItem().(AttributeItem).id, m.h)
 		}
 	}
+
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 
 func (m AttributeList) View() string {
+	if m.loading {
+		return lipgloss.NewStyle().
+			Padding(1, 2).
+			Render(m.spinner.View() + " Loading attributes…")
+	}
 	return ViewList(m.list)
 }
-
-// func AddAttribute() {
-// 	var namespace string
-
-// 	form := huh.NewForm(
-// 		huh.NewGroup(
-// 			huh.NewSelect[string]().
-// 				Title("Namespace").
-// 				Options(
-// 					huh.NewOption("demo.com", "demo.com"),
-// 					huh.NewOption("demo.net", "demo.net"),
-// 				).
-// 				Validate(func(str string) error {
-// 					// Check if namespace exists
-// 					fmt.Println(str)
-// 					return nil
-// 				}).
-// 				Value(&namespace),
-// 		),
-// 	)
-
-// 	if err := form.Run(); err != nil {
-// 		return
-// 	}
-// }

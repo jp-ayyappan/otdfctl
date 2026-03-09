@@ -17,17 +17,18 @@ const (
 )
 
 // Root is the top-level BubbleTea model. It owns the persistent layout:
-// header, sidebar, content area, and keybar. Only the content area changes
-// as the user navigates.
+// header, sidebar, content area, status bar, and keybar. Only the content
+// area changes as the user navigates.
 type Root struct {
-	h       handlers.Handler
-	header  Header
-	sidebar Sidebar
-	content tea.Model
-	keybar  Keybar
-	focus   focusTarget
-	width   int
-	height  int
+	h         handlers.Handler
+	header    Header
+	sidebar   Sidebar
+	content   tea.Model
+	statusbar StatusBar
+	keybar    Keybar
+	focus     focusTarget
+	width     int
+	height    int
 }
 
 func NewRoot(h handlers.Handler, profile, endpoint string) (Root, tea.Cmd) {
@@ -38,12 +39,13 @@ func NewRoot(h handlers.Handler, profile, endpoint string) (Root, tea.Cmd) {
 	content, contentCmd := defaultItem.load(context.Background(), h)
 
 	m := Root{
-		h:       h,
-		header:  NewHeader(profile, endpoint),
-		sidebar: sidebar,
-		content: content,
-		keybar:  NewKeybar(globalBindings),
-		focus:   focusContent,
+		h:         h,
+		header:    NewHeader(profile, endpoint),
+		sidebar:   sidebar,
+		content:   content,
+		statusbar: NewStatusBar(),
+		keybar:    NewKeybar(globalBindings),
+		focus:     focusContent,
 	}
 	return m, contentCmd
 }
@@ -52,9 +54,11 @@ func (m Root) Init() tea.Cmd {
 	return m.content.Init()
 }
 
+const statusBarHeight = 1
+
 func (m Root) contentSize() (width, height int) {
 	width = m.width - SidebarWidth - SidebarBorder
-	height = m.height - HeaderHeight - KeybarHeight
+	height = m.height - HeaderHeight - statusBarHeight - KeybarHeight
 	if width < 0 {
 		width = 0
 	}
@@ -85,14 +89,22 @@ func (m Root) activeBindings() []KeyBinding {
 func (m Root) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
+	case StatusMsg:
+		m.statusbar = m.statusbar.Set(msg)
+		if msg.Text != "" {
+			return m, clearStatusCmd(4 * 1000000000) // 4 seconds
+		}
+		return m, nil
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		constants.WindowSize = msg
 
 		m.header = m.header.SetWidth(msg.Width)
+		m.statusbar = m.statusbar.SetWidth(msg.Width)
 		m.keybar = m.keybar.SetWidth(msg.Width)
-		m.sidebar = m.sidebar.SetHeight(m.height - HeaderHeight - KeybarHeight)
+		m.sidebar = m.sidebar.SetHeight(m.height - HeaderHeight - statusBarHeight - KeybarHeight)
 
 		// Forward adjusted size to content
 		newContent, cmd := m.content.Update(m.contentSizeMsg())
@@ -154,7 +166,8 @@ func (m Root) View() string {
 	sidebar := m.sidebar.View()
 	content := lipgloss.NewStyle().Width(cw).Height(ch).Render(m.content.View())
 	body := lipgloss.JoinHorizontal(lipgloss.Top, sidebar, content)
+	status := m.statusbar.View()
 	keybar := m.keybar.View()
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, body, keybar)
+	return lipgloss.JoinVertical(lipgloss.Left, header, body, status, keybar)
 }
