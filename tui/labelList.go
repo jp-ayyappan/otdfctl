@@ -53,6 +53,14 @@ func (m LabelList) Init() tea.Cmd {
 	return nil
 }
 
+func (m LabelList) KeyBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "enter", Help: "edit"},
+		{Key: "c", Help: "create"},
+		{Key: "backspace", Help: "back"},
+	}
+}
+
 func (m LabelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	ctx := context.Background()
 

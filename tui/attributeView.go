@@ -62,6 +62,13 @@ func (m AttributeView) Init() tea.Cmd {
 	return nil
 }
 
+func (m AttributeView) KeyBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "enter", Help: "edit labels"},
+		{Key: "backspace", Help: "back"},
+	}
+}
+
 func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	ctx := context.Background()
 

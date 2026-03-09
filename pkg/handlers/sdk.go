@@ -20,6 +20,7 @@ var (
 type Handler struct {
 	sdk              *sdk.SDK
 	platformEndpoint string
+	profileName      string
 }
 
 type handlerOpts struct {
@@ -102,9 +103,15 @@ func New(opts ...handlerOptsFunc) (Handler, error) {
 		return Handler{}, err
 	}
 
+	profileName := ""
+	if o.profile != nil {
+		profileName = o.profile.Name()
+	}
+
 	return Handler{
 		sdk:              s,
 		platformEndpoint: o.endpoint,
+		profileName:      profileName,
 	}, nil
 }
 
@@ -114,6 +121,14 @@ func (h Handler) Close() error {
 
 func (h Handler) Direct() *sdk.SDK {
 	return h.sdk
+}
+
+func (h Handler) GetEndpoint() string {
+	return h.platformEndpoint
+}
+
+func (h Handler) GetProfileName() string {
+	return h.profileName
 }
 
 // Replace all labels in the metadata

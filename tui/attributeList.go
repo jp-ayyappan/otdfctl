@@ -70,6 +70,14 @@ func (m AttributeList) Init() tea.Cmd {
 	return nil
 }
 
+func (m AttributeList) KeyBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "enter", Help: "view"},
+		{Key: "/", Help: "filter"},
+		{Key: "backspace", Help: "back"},
+	}
+}
+
 func StyleAttr(attr string) string {
 	return lipgloss.NewStyle().
 		Foreground(constants.Magenta).
@@ -97,10 +105,8 @@ func (m AttributeList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "ctrl+[", "backspace":
-			am, _ := InitAppMenu(m.h)
-			// make enum for Attributes idx in AppMenu
-			am.list.Select(0)
-			return am.Update(WindowMsg())
+			// Navigation back is handled by the root layout via tab + sidebar
+			return m, nil
 		// case "c":
 		// create new attribute
 		// return InitAttributeView(m.list.Items(), len(m.list.Items()))

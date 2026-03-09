@@ -26,8 +26,9 @@ func StartTea(h handlers.Handler) error {
 		}()
 	}
 
-	m, _ := InitAppMenu(h)
+	m, cmd := NewRoot(h, h.GetProfileName(), h.GetEndpoint())
 	constants.P = tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
+	_ = cmd
 	if _, err := constants.P.Run(); err != nil {
 		cli.ExitWithError("Error running program:", err)
 	}

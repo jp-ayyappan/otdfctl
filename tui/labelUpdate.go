@@ -29,6 +29,13 @@ func (m LabelUpdate) Init() tea.Cmd {
 	return nil
 }
 
+func (m LabelUpdate) KeyBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "tab", Help: "next field"},
+		{Key: "enter", Help: "submit"},
+	}
+}
+
 func (m LabelUpdate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	ctx := context.Background()
 
