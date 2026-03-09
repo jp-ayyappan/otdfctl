@@ -26,7 +26,7 @@ var navItems = []navItem{
 		group: "Policy",
 		title: "Namespaces",
 		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("Namespaces"), nil
+			return InitNamespaceList(ctx, h)
 		},
 	},
 	{
@@ -38,23 +38,16 @@ var navItems = []navItem{
 	},
 	{
 		group: "Policy",
-		title: "Attr Values",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("Attribute Values"), nil
-		},
-	},
-	{
-		group: "Policy",
 		title: "Subject Mappings",
 		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("Subject Mappings"), nil
+			return InitSubjectMappingList(ctx, h)
 		},
 	},
 	{
 		group: "Policy",
 		title: "KAS Registry",
 		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("KAS Registry"), nil
+			return InitKASRegistryList(ctx, h)
 		},
 	},
 	{
@@ -68,7 +61,7 @@ var navItems = []navItem{
 		group: "Policy",
 		title: "Resource Mappings",
 		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("Resource Mappings"), nil
+			return InitResourceMappingList(ctx, h)
 		},
 	},
 }
