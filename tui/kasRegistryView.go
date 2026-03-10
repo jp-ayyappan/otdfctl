@@ -33,6 +33,7 @@ func InitKASRegistryView(ctx context.Context, id string, h TUIHandler) (tea.Mode
 		AttributeSubItem{title: "Name", description: kas.GetName()},
 		AttributeSubItem{title: "URI", description: kas.GetUri()},
 		AttributeSubItem{title: "Public Key", description: pubKey},
+		AttributeSubItem{title: "Keys", description: "→ view cryptographic keys"},
 	}
 
 	model, _ := InitRead("KAS Registry Detail", items)
@@ -46,6 +47,7 @@ func (m KASRegistryView) Init() tea.Cmd { return nil }
 
 func (m KASRegistryView) KeyBindings() []KeyBinding {
 	return []KeyBinding{
+		{Key: "enter", Help: "open Keys"},
 		{Key: "backspace", Help: "back"},
 	}
 }
@@ -64,6 +66,10 @@ func (m KASRegistryView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return InitKASRegistryList(ctx, m.h)
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "enter":
+			if m.read.list.SelectedItem().(AttributeSubItem).title == "Keys" {
+				return InitKASKeyList(ctx, m.kas, m.h)
+			}
 		}
 	}
 

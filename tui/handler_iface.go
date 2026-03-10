@@ -38,9 +38,19 @@ type TUIHandler interface {
 	ListSubjectMappings(ctx context.Context, limit, offset int32) (*subjectmapping.ListSubjectMappingsResponse, error)
 	GetSubjectMapping(ctx context.Context, id string) (*policy.SubjectMapping, error)
 
+	// Attribute Values
+	ListAttributeValues(ctx context.Context, attributeID string) ([]*policy.Value, error)
+	GetAttributeValue(ctx context.Context, identifier string) (*policy.Value, error)
+
 	// KAS Registry
 	ListKasRegistryEntries(ctx context.Context, limit, offset int32) (*kasregistry.ListKeyAccessServersResponse, error)
 	GetKasRegistryEntry(ctx context.Context, identifier handlers.KasIdentifier) (*policy.KeyAccessServer, error)
+
+	// KAS Keys
+	ListKasKeys(ctx context.Context, limit, offset int32, algorithm policy.Algorithm, identifier handlers.KasIdentifier, legacy *bool) (*kasregistry.ListKeysResponse, error)
+
+	// KAS Grants (key mappings)
+	ListKeyMappings(ctx context.Context, limit, offset int32, keySystemID string, keyUserIdentifier *kasregistry.KasKeyIdentifier) (*kasregistry.ListKeyMappingsResponse, error)
 
 	// Resource Mappings
 	ListResourceMappings(ctx context.Context, limit, offset int32) (*resourcemapping.ListResourceMappingsResponse, error)

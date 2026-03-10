@@ -53,7 +53,7 @@ var navItems = []navItem{
 		group: "Policy",
 		title: "KAS Grants",
 		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
-			return NewPlaceholder("KAS Grants"), nil
+			return InitKASGrantList(ctx, h)
 		},
 	},
 	{

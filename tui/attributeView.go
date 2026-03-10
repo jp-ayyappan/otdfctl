@@ -63,7 +63,7 @@ func (m AttributeView) Init() tea.Cmd {
 
 func (m AttributeView) KeyBindings() []KeyBinding {
 	return []KeyBinding{
-		{Key: "enter", Help: "edit labels"},
+		{Key: "enter", Help: "open (Values / Labels)"},
 		{Key: "backspace", Help: "back"},
 	}
 }
@@ -85,8 +85,11 @@ func (m AttributeView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+d":
 			return m, nil
 		case "enter":
-			if m.read.list.SelectedItem().(AttributeSubItem).title == "Labels" {
+			switch m.read.list.SelectedItem().(AttributeSubItem).title {
+			case "Labels":
 				return InitLabelList(m.attr, m.sdk)
+			case "Values":
+				return InitAttrValueList(ctx, m.attr, m.sdk)
 			}
 			// case "enter":
 			// 	switch m.list.SelectedItem().(AttributeItem).id {

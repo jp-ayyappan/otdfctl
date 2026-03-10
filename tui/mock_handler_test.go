@@ -121,6 +121,22 @@ func (m *mockHandler) GetKasRegistryEntry(_ context.Context, id handlers.KasIden
 	return &policy.KeyAccessServer{Id: id.ID, Uri: "https://kas.example.com"}, nil
 }
 
+func (m *mockHandler) ListAttributeValues(_ context.Context, _ string) ([]*policy.Value, error) {
+	return nil, m.attributeErr
+}
+
+func (m *mockHandler) GetAttributeValue(_ context.Context, id string) (*policy.Value, error) {
+	return &policy.Value{Id: id, Value: "test-value", Fqn: "https://ns.io/attr/a/value/test-value"}, m.attributeErr
+}
+
+func (m *mockHandler) ListKasKeys(_ context.Context, _, _ int32, _ policy.Algorithm, _ handlers.KasIdentifier, _ *bool) (*kasregistry.ListKeysResponse, error) {
+	return &kasregistry.ListKeysResponse{}, m.kasErr
+}
+
+func (m *mockHandler) ListKeyMappings(_ context.Context, _, _ int32, _ string, _ *kasregistry.KasKeyIdentifier) (*kasregistry.ListKeyMappingsResponse, error) {
+	return &kasregistry.ListKeyMappingsResponse{}, m.kasErr
+}
+
 func (m *mockHandler) ListResourceMappings(_ context.Context, _, _ int32) (*resourcemapping.ListResourceMappingsResponse, error) {
 	if m.rmErr != nil {
 		return nil, m.rmErr
