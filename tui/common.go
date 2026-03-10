@@ -8,12 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 // StartTea the entry point for the UI. Initializes the model.
-func StartTea(h handlers.Handler) error {
+func StartTea(h TUIHandler) error {
 	if f, err := tea.LogToFile("debug.log", "help"); err != nil {
 		cli.ExitWithError("Couldn't open a file for logging:", err)
 		os.Exit(1)

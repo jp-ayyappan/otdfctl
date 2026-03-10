@@ -5,7 +5,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
@@ -13,10 +12,10 @@ import (
 type NamespaceView struct {
 	ns   *policy.Namespace
 	read Read
-	h    handlers.Handler
+	h    TUIHandler
 }
 
-func InitNamespaceView(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitNamespaceView(ctx context.Context, id string, h TUIHandler) (tea.Model, tea.Cmd) {
 	ns, _ := h.GetNamespace(ctx, id)
 	active := "false"
 	if ns.GetActive().GetValue() {

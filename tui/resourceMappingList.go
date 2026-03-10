@@ -8,13 +8,12 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
 type ResourceMappingList struct {
 	list    list.Model
-	h       handlers.Handler
+	h       TUIHandler
 	spinner spinner.Model
 	loading bool
 }
@@ -33,7 +32,7 @@ type resourceMappingsLoadedMsg struct {
 	err   error
 }
 
-func loadResourceMappings(ctx context.Context, h handlers.Handler) tea.Cmd {
+func loadResourceMappings(ctx context.Context, h TUIHandler) tea.Cmd {
 	return func() tea.Msg {
 		res, err := h.ListResourceMappings(ctx, 250, 0)
 		if err != nil {
@@ -50,7 +49,7 @@ func loadResourceMappings(ctx context.Context, h handlers.Handler) tea.Cmd {
 	}
 }
 
-func InitResourceMappingList(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitResourceMappingList(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	l.Title = "Resource Mappings"
 

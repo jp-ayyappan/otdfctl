@@ -6,7 +6,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
@@ -14,10 +13,10 @@ import (
 type ResourceMappingView struct {
 	rm   *policy.ResourceMapping
 	read Read
-	h    handlers.Handler
+	h    TUIHandler
 }
 
-func InitResourceMappingView(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitResourceMappingView(ctx context.Context, id string, h TUIHandler) (tea.Model, tea.Cmd) {
 	rm, _ := h.GetResourceMapping(id)
 
 	items := []list.Item{

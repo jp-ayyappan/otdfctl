@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/opentdf/otdfctl/pkg/cli"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
@@ -31,10 +30,10 @@ func (m AttributeSubItem) Description() string {
 type AttributeView struct {
 	attr *policy.Attribute
 	read Read
-	sdk  handlers.Handler
+	sdk  TUIHandler
 }
 
-func InitAttributeView(ctx context.Context, id string, h handlers.Handler) (AttributeView, tea.Cmd) {
+func InitAttributeView(ctx context.Context, id string, h TUIHandler) (AttributeView, tea.Cmd) {
 	// TODO: handle and return error view
 	attr, _ := h.GetAttribute(ctx, id)
 	sa := cli.GetSimpleAttribute(attr)

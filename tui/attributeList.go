@@ -7,14 +7,13 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/common"
 )
 
 type AttributeList struct {
 	list    list.Model
-	h       handlers.Handler
+	h       TUIHandler
 	spinner spinner.Model
 	loading bool
 }
@@ -33,7 +32,7 @@ type attributesLoadedMsg struct {
 	err   error
 }
 
-func loadAttributes(ctx context.Context, h handlers.Handler, selectID string) tea.Cmd {
+func loadAttributes(ctx context.Context, h TUIHandler, selectID string) tea.Cmd {
 	return func() tea.Msg {
 		res, err := h.ListAttributes(ctx, common.ActiveStateEnum_ACTIVE_STATE_ENUM_ANY, 250, 0)
 		if err != nil {
@@ -47,7 +46,7 @@ func loadAttributes(ctx context.Context, h handlers.Handler, selectID string) te
 	}
 }
 
-func InitAttributeList(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitAttributeList(ctx context.Context, id string, h TUIHandler) (tea.Model, tea.Cmd) {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
 	l.Title = "Attributes"
 

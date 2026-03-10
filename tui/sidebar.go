@@ -6,7 +6,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 )
 
 // NavSelectMsg is sent when a sidebar item is selected.
@@ -17,7 +16,7 @@ type NavSelectMsg struct {
 type navItem struct {
 	title string
 	group string
-	load  func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd)
+	load  func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd)
 }
 
 // navItems defines the full navigation tree. Items without a load fn get a placeholder.
@@ -25,42 +24,42 @@ var navItems = []navItem{
 	{
 		group: "Policy",
 		title: "Namespaces",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitNamespaceList(ctx, h)
 		},
 	},
 	{
 		group: "Policy",
 		title: "Attributes",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitAttributeList(ctx, "", h)
 		},
 	},
 	{
 		group: "Policy",
 		title: "Subject Mappings",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitSubjectMappingList(ctx, h)
 		},
 	},
 	{
 		group: "Policy",
 		title: "KAS Registry",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitKASRegistryList(ctx, h)
 		},
 	},
 	{
 		group: "Policy",
 		title: "KAS Grants",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return NewPlaceholder("KAS Grants"), nil
 		},
 	},
 	{
 		group: "Policy",
 		title: "Resource Mappings",
-		load: func(ctx context.Context, h handlers.Handler) (tea.Model, tea.Cmd) {
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitResourceMappingList(ctx, h)
 		},
 	},

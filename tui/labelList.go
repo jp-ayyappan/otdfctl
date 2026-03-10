@@ -5,14 +5,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
 
 type LabelList struct {
 	attr *policy.Attribute
-	sdk  handlers.Handler
+	sdk  TUIHandler
 	read Read
 }
 
@@ -33,7 +32,7 @@ func (m LabelItem) Description() string {
 	return m.description
 }
 
-func InitLabelList(attr *policy.Attribute, sdk handlers.Handler) (tea.Model, tea.Cmd) {
+func InitLabelList(attr *policy.Attribute, sdk TUIHandler) (tea.Model, tea.Cmd) {
 	labels := attr.GetMetadata().GetLabels()
 	var items []list.Item
 	for k, v := range labels {

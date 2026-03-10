@@ -15,7 +15,7 @@ func newInteractiveCmd() *cobra.Command {
 			c := cli.New(cmd, args)
 			h := common.NewHandler(c)
 			//nolint:errcheck // error does not need to be checked
-			tui.StartTea(h)
+			tui.StartTea(&h)
 		}),
 	)
 	return &doc.Command

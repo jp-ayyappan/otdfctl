@@ -7,7 +7,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
@@ -15,10 +14,10 @@ import (
 type SubjectMappingView struct {
 	sm   *policy.SubjectMapping
 	read Read
-	h    handlers.Handler
+	h    TUIHandler
 }
 
-func InitSubjectMappingView(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitSubjectMappingView(ctx context.Context, id string, h TUIHandler) (tea.Model, tea.Cmd) {
 	sm, _ := h.GetSubjectMapping(ctx, id)
 
 	var actions []string

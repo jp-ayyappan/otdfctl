@@ -13,10 +13,10 @@ import (
 type KASRegistryView struct {
 	kas  *policy.KeyAccessServer
 	read Read
-	h    handlers.Handler
+	h    TUIHandler
 }
 
-func InitKASRegistryView(ctx context.Context, id string, h handlers.Handler) (tea.Model, tea.Cmd) {
+func InitKASRegistryView(ctx context.Context, id string, h TUIHandler) (tea.Model, tea.Cmd) {
 	kas, _ := h.GetKasRegistryEntry(ctx, handlers.KasIdentifier{ID: id})
 
 	pubKey := ""

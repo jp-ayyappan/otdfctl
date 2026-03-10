@@ -4,7 +4,6 @@ import (
 	"context"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/platform/protocol/go/common"
 	"github.com/opentdf/platform/protocol/go/policy"
 )
@@ -13,10 +12,10 @@ type LabelUpdate struct {
 	label  LabelItem
 	update Update
 	attr   *policy.Attribute
-	sdk    handlers.Handler
+	sdk    TUIHandler
 }
 
-func InitLabelUpdate(label LabelItem, attr *policy.Attribute, sdk handlers.Handler) LabelUpdate {
+func InitLabelUpdate(label LabelItem, attr *policy.Attribute, sdk TUIHandler) LabelUpdate {
 	return LabelUpdate{
 		label:  label,
 		update: InitUpdate([]string{"Key", "Value"}, []string{label.title, label.description}),

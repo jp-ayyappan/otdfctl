@@ -5,7 +5,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/otdfctl/tui/constants"
 )
 
@@ -20,7 +19,7 @@ const (
 // header, sidebar, content area, status bar, and keybar. Only the content
 // area changes as the user navigates.
 type Root struct {
-	h         handlers.Handler
+	h         TUIHandler
 	header    Header
 	sidebar   Sidebar
 	content   tea.Model
@@ -31,7 +30,7 @@ type Root struct {
 	height    int
 }
 
-func NewRoot(h handlers.Handler, profile, endpoint string) (Root, tea.Cmd) {
+func NewRoot(h TUIHandler, profile, endpoint string) (Root, tea.Cmd) {
 	sidebar := NewSidebar()
 
 	// Load default content (Attributes, index 1 in navItems)
