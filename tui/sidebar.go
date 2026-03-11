@@ -44,6 +44,13 @@ var navItems = []navItem{
 	},
 	{
 		group: "Policy",
+		title: "Condition Sets",
+		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
+			return InitSCSList(ctx, h)
+		},
+	},
+	{
+		group: "Policy",
 		title: "KAS Registry",
 		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitKASRegistryList(ctx, h)

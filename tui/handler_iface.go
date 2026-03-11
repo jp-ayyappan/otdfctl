@@ -38,6 +38,10 @@ type TUIHandler interface {
 	ListSubjectMappings(ctx context.Context, limit, offset int32) (*subjectmapping.ListSubjectMappingsResponse, error)
 	GetSubjectMapping(ctx context.Context, id string) (*policy.SubjectMapping, error)
 
+	// Subject Condition Sets
+	ListSubjectConditionSets(ctx context.Context, limit, offset int32) (*subjectmapping.ListSubjectConditionSetsResponse, error)
+	GetSubjectConditionSet(ctx context.Context, id string) (*policy.SubjectConditionSet, error)
+
 	// Attribute Values
 	ListAttributeValues(ctx context.Context, attributeID string) ([]*policy.Value, error)
 	GetAttributeValue(ctx context.Context, identifier string) (*policy.Value, error)

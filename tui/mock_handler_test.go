@@ -102,6 +102,14 @@ func (m *mockHandler) GetSubjectMapping(_ context.Context, id string) (*policy.S
 	return &policy.SubjectMapping{Id: id}, nil
 }
 
+func (m *mockHandler) ListSubjectConditionSets(_ context.Context, _, _ int32) (*subjectmapping.ListSubjectConditionSetsResponse, error) {
+	return &subjectmapping.ListSubjectConditionSetsResponse{}, m.smErr
+}
+
+func (m *mockHandler) GetSubjectConditionSet(_ context.Context, id string) (*policy.SubjectConditionSet, error) {
+	return &policy.SubjectConditionSet{Id: id}, m.smErr
+}
+
 func (m *mockHandler) ListKasRegistryEntries(_ context.Context, _, _ int32) (*kasregistry.ListKeyAccessServersResponse, error) {
 	if m.kasErr != nil {
 		return nil, m.kasErr
