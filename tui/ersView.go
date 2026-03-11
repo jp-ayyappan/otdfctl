@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -13,12 +14,14 @@ import (
 	"github.com/opentdf/otdfctl/tui/constants"
 	"github.com/opentdf/platform/protocol/go/entity"
 	ersv2 "github.com/opentdf/platform/protocol/go/entityresolution/v2"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // ersResolvedMsg carries the ERS response back to the model.
 type ersResolvedMsg struct {
-	reps []*ersv2.EntityRepresentation
-	err  error
+	reps     []*ersv2.EntityRepresentation
+	entities []*entity.Entity // original inputs for mapping entity_idx_N → identifier
+	err      error
 }
 
 // ---- ERSInputView — entity identifier input form ----
@@ -82,13 +85,14 @@ func (m ERSInputView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			ent := buildEntity(m.inputType, val)
+			inputs := []*entity.Entity{ent}
 			results := NewERSResultView([]string{val}, m.h)
 			return results, func() tea.Msg {
-				resp, err := m.h.ResolveEntities(context.Background(), []*entity.Entity{ent})
+				resp, err := m.h.ResolveEntities(context.Background(), inputs)
 				if err != nil {
-					return ersResolvedMsg{err: err}
+					return ersResolvedMsg{err: err, entities: inputs}
 				}
-				return ersResolvedMsg{reps: resp.GetEntityRepresentations()}
+				return ersResolvedMsg{reps: resp.GetEntityRepresentations(), entities: inputs}
 			}
 		}
 	}
@@ -140,17 +144,27 @@ type ERSResultView struct {
 	h        TUIHandler
 }
 
-type ERSEntitlementItem struct {
-	entity  string
-	attrFQN string
-	actions string
+// ERSRowItem is a generic display row in the ERS result list.
+type ERSRowItem struct {
+	section string // "id", "idp-attr", "entitlement", "header"
+	key     string
+	value   string
 }
 
-func (e ERSEntitlementItem) FilterValue() string { return e.entity + " " + e.attrFQN }
-func (e ERSEntitlementItem) Title() string       { return e.attrFQN }
-func (e ERSEntitlementItem) Description() string {
-	return fmt.Sprintf("entity: %s  actions: %s", e.entity, e.actions)
+func (r ERSRowItem) FilterValue() string { return r.key + " " + r.value }
+
+func (r ERSRowItem) Title() string {
+	switch r.section {
+	case "header":
+		return lipgloss.NewStyle().Bold(true).Foreground(ColorAccent).Render("▸ " + r.key)
+	case "entitlement":
+		return lipgloss.NewStyle().Foreground(ColorSuccess).Render("⊕ ") + r.key
+	default:
+		return "  " + r.key
+	}
 }
+
+func (r ERSRowItem) Description() string { return r.value }
 
 func NewERSResultView(entities []string, h TUIHandler) ERSResultView {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), constants.WindowSize.Width, constants.WindowSize.Height)
@@ -181,23 +195,13 @@ func (m ERSResultView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return StatusMsg{Text: "ERS error: " + msg.err.Error(), IsError: true}
 			}
 		}
-		var items []list.Item
-		for _, rep := range msg.reps {
-			id := rep.GetOriginalId()
-			for _, e := range rep.GetDirectEntitlements() {
-				items = append(items, ERSEntitlementItem{
-					entity:  id,
-					attrFQN: e.GetAttributeValueFqn(),
-					actions: strings.Join(e.GetActions(), ", "),
-				})
-			}
-		}
+		items := buildERSItems(msg.reps, msg.entities)
+		m.list.SetItems(items)
 		if len(items) == 0 {
 			return m, func() tea.Msg {
-				return StatusMsg{Text: "No entitlements found for the given entity.", IsError: false}
+				return StatusMsg{Text: "ERS returned no data for the given entity.", IsError: false}
 			}
 		}
-		m.list.SetItems(items)
 		return m, nil
 
 	case spinner.TickMsg:
@@ -258,3 +262,99 @@ func ersInputPlaceholder(inputType string) string {
 		return "alice@example.com"
 	}
 }
+
+// internalERSKeys are Keycloak/LDAP bookkeeping fields we skip in TUI output.
+var internalERSKeys = map[string]bool{
+	"LDAP_ENTRY_DN":   true,
+	"LDAP_ID":         true,
+	"createTimestamp": true,
+	"modifyTimestamp": true,
+}
+
+// buildERSItems converts ERS response representations into flat list items,
+// showing identity fields, IdP attributes, and OpenTDF entitlements per entity.
+func buildERSItems(reps []*ersv2.EntityRepresentation, inputs []*entity.Entity) []list.Item {
+	var items []list.Item
+
+	for i, rep := range reps {
+		// Resolve the human-readable label for this entity
+		label := ersEntityLabel(rep.GetOriginalId(), inputs, i)
+
+		// Entity header
+		items = append(items, ERSRowItem{section: "header", key: label})
+
+		// Identity fields from additional_props
+		idKeys := []string{"email", "username", "firstName", "lastName", "id"}
+		for _, prop := range rep.GetAdditionalProps() {
+			fields := prop.GetFields()
+			for _, k := range idKeys {
+				if v, ok := fields[k]; ok && v.GetStringValue() != "" {
+					items = append(items, ERSRowItem{section: "id", key: k, value: v.GetStringValue()})
+				}
+			}
+			// Custom attributes nested under "attributes"
+			if attrField, ok := fields["attributes"]; ok {
+				if attrStruct := attrField.GetStructValue(); attrStruct != nil {
+					keys := make([]string, 0, len(attrStruct.GetFields()))
+					for k := range attrStruct.GetFields() {
+						keys = append(keys, k)
+					}
+					sort.Strings(keys)
+					for _, k := range keys {
+						if internalERSKeys[k] {
+							continue
+						}
+						var vals []string
+						for _, item := range attrStruct.GetFields()[k].GetListValue().GetValues() {
+							vals = append(vals, item.GetStringValue())
+						}
+						if len(vals) > 0 {
+							items = append(items, ERSRowItem{
+								section: "idp-attr",
+								key:     k,
+								value:   strings.Join(vals, ", "),
+							})
+						}
+					}
+				}
+			}
+		}
+
+		// OpenTDF entitlements
+		entitlements := rep.GetDirectEntitlements()
+		if len(entitlements) == 0 {
+			items = append(items, ERSRowItem{
+				section: "entitlement",
+				key:     "No OpenTDF entitlements",
+				value:   "check subject mappings",
+			})
+		} else {
+			for _, e := range entitlements {
+				items = append(items, ERSRowItem{
+					section: "entitlement",
+					key:     e.GetAttributeValueFqn(),
+					value:   strings.Join(e.GetActions(), ", "),
+				})
+			}
+		}
+	}
+	return items
+}
+
+// ersEntityLabel maps the ephemeral entity_idx_N back to the original input identifier.
+func ersEntityLabel(originalID string, inputs []*entity.Entity, idx int) string {
+	if idx < len(inputs) {
+		switch et := inputs[idx].GetEntityType().(type) {
+		case *entity.Entity_EmailAddress:
+			return et.EmailAddress
+		case *entity.Entity_ClientId:
+			return et.ClientId
+		case *entity.Entity_UserName:
+			return et.UserName
+		}
+	}
+	return originalID
+}
+
+// Keep structpb in scope — used via attrField.GetStructValue() above.
+var _ *structpb.Struct
