@@ -54,8 +54,7 @@ func (m ERSInputView) Init() tea.Cmd { return textinput.Blink }
 func (m ERSInputView) KeyBindings() []KeyBinding {
 	return []KeyBinding{
 		{Key: "enter", Help: "resolve"},
-		{Key: "tab", Help: "toggle type"},
-		{Key: "backspace", Help: "clear"},
+		{Key: "ctrl+t", Help: "toggle type"},
 	}
 }
 
@@ -71,7 +70,7 @@ func (m ERSInputView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
-		case "tab":
+		case "ctrl+t":
 			m.typeToggle = (m.typeToggle + 1) % len(ersInputTypes)
 			m.inputType = ersInputTypes[m.typeToggle]
 			m.input.Placeholder = ersInputPlaceholder(m.inputType)
@@ -105,7 +104,7 @@ func (m ERSInputView) View() string {
 		Render(m.inputType)
 
 	tabHint := lipgloss.NewStyle().Foreground(ColorDim).
-		Render("  tab to switch type")
+		Render("  ctrl+t to switch type")
 
 	inputRow := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
