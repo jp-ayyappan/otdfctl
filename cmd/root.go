@@ -8,6 +8,7 @@ import (
 	"github.com/opentdf/otdfctl/cmd/auth"
 	cfg "github.com/opentdf/otdfctl/cmd/config"
 	"github.com/opentdf/otdfctl/cmd/dev"
+	"github.com/opentdf/otdfctl/cmd/ers"
 	"github.com/opentdf/otdfctl/cmd/policy"
 	"github.com/opentdf/otdfctl/cmd/tdf"
 	"github.com/opentdf/otdfctl/pkg/cli"
@@ -94,6 +95,8 @@ func init() {
 		auth.Cmd,
 		// policy
 		policy.Cmd,
+		// ers
+		ers.Cmd,
 		// dev
 		dev.Cmd,
 	)

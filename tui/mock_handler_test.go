@@ -6,6 +6,8 @@ import (
 
 	"github.com/opentdf/otdfctl/pkg/handlers"
 	"github.com/opentdf/platform/protocol/go/common"
+	"github.com/opentdf/platform/protocol/go/entity"
+	ersv2 "github.com/opentdf/platform/protocol/go/entityresolution/v2"
 	"github.com/opentdf/platform/protocol/go/policy"
 	"github.com/opentdf/platform/protocol/go/policy/attributes"
 	"github.com/opentdf/platform/protocol/go/policy/kasregistry"
@@ -162,6 +164,10 @@ func (m *mockHandler) GetResourceMapping(id string) (*policy.ResourceMapping, er
 		}
 	}
 	return &policy.ResourceMapping{Id: id, Terms: []string{"term1", "term2"}}, nil
+}
+
+func (m *mockHandler) ResolveEntities(_ context.Context, _ []*entity.Entity) (*ersv2.ResolveEntitiesResponse, error) {
+	return &ersv2.ResolveEntitiesResponse{}, m.kasErr
 }
 
 // ---- helpers for building test proto objects ----

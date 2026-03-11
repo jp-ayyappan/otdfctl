@@ -11,6 +11,9 @@ import (
 	"github.com/opentdf/platform/protocol/go/policy/resourcemapping"
 	"github.com/opentdf/platform/protocol/go/policy/subjectmapping"
 
+	"github.com/opentdf/platform/protocol/go/entity"
+	ersv2 "github.com/opentdf/platform/protocol/go/entityresolution/v2"
+
 	"github.com/opentdf/otdfctl/pkg/handlers"
 )
 
@@ -59,4 +62,7 @@ type TUIHandler interface {
 	// Resource Mappings
 	ListResourceMappings(ctx context.Context, limit, offset int32) (*resourcemapping.ListResourceMappingsResponse, error)
 	GetResourceMapping(id string) (*policy.ResourceMapping, error)
+
+	// Entity Resolution
+	ResolveEntities(ctx context.Context, entities []*entity.Entity) (*ersv2.ResolveEntitiesResponse, error)
 }

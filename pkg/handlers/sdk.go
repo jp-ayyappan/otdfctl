@@ -21,6 +21,21 @@ type Handler struct {
 	sdk              *sdk.SDK
 	platformEndpoint string
 	profileName      string
+	ersEndpoint      string // optional ERS endpoint override; defaults to platformEndpoint
+}
+
+// SetERSEndpoint overrides the ERS endpoint used for entity resolution.
+// Defaults to platformEndpoint if not set.
+func (h *Handler) SetERSEndpoint(endpoint string) {
+	h.ersEndpoint = endpoint
+}
+
+// GetERSEndpoint returns the active ERS endpoint (override or platform fallback).
+func (h Handler) GetERSEndpoint() string {
+	if h.ersEndpoint != "" {
+		return h.ersEndpoint
+	}
+	return h.platformEndpoint
 }
 
 type handlerOpts struct {

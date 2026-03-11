@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -68,6 +69,13 @@ var navItems = []navItem{
 		title: "Resource Mappings",
 		load: func(ctx context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
 			return InitResourceMappingList(ctx, h)
+		},
+	},
+	{
+		group: "ERS",
+		title: "Resolve Entity",
+		load: func(_ context.Context, h TUIHandler) (tea.Model, tea.Cmd) {
+			return NewERSInputView(h), textinput.Blink
 		},
 	},
 }
