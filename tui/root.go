@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -30,28 +31,23 @@ type Root struct {
 	height    int
 }
 
-func NewRoot(h TUIHandler, profile, endpoint string) (Root, tea.Cmd) {
-	sidebar := NewSidebar()
+func NewRoot(h TUIHandler, profile, endpoint string) Root {
+	sidebar := NewSidebar().SetFocused(true)
 
-	// Load default content (Attributes, index 1 in navItems)
-	defaultItem := navItems[1]
-	content, contentCmd := defaultItem.load(context.Background(), h)
-
-	m := Root{
+	return Root{
 		h:         h,
 		header:    NewHeader(profile, endpoint),
 		sidebar:   sidebar,
-		content:   content,
+		content:   NewWelcome(),
 		statusbar: NewStatusBar(),
-		keybar:    NewKeybar(globalBindings),
-		focus:     focusContent,
+		keybar:    NewKeybar(append(sidebarBindings, globalBindings...)),
+		focus:     focusSidebar,
 	}
-	return m, contentCmd
 }
 
-func (m Root) Init() tea.Cmd {
-	return m.content.Init()
-}
+// Init is called once by BubbleTea after the program starts. Nothing is
+// loaded eagerly — resources are fetched only when selected in the sidebar.
+func (m Root) Init() tea.Cmd { return nil }
 
 const statusBarHeight = 1
 
@@ -91,7 +87,7 @@ func (m Root) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StatusMsg:
 		m.statusbar = m.statusbar.Set(msg)
 		if msg.Text != "" {
-			return m, clearStatusCmd(4 * 1000000000) // 4 seconds
+			return m, clearStatusCmd(4 * time.Second)
 		}
 		return m, nil
 
